@@ -24,10 +24,6 @@ type IOSDeviceMotionEvent = typeof DeviceMotionEvent & {
   requestPermission?: () => Promise<"granted" | "denied">;
 };
 
-type PreMatchPhase = "idle" | "tutorial" | "combined" | "countdown";
-
-const MOBILE_TUTORIAL_DURATION_MS = 3000;
-
 async function requestMotionAccess() {
   if (typeof window === "undefined" || !("DeviceMotionEvent" in window)) {
     return "unavailable" as MotionPermissionState;
@@ -58,34 +54,12 @@ function ReadyRoomPage({
   const [player1Ready, setPlayer1Ready] = useState(false);
   const [player2Ready, setPlayer2Ready] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
-  const [preMatchPhase, setPreMatchPhase] = useState<PreMatchPhase>("idle");
   const [permissionMessage, setPermissionMessage] = useState<string | null>(null);
   const [copyFeedback, setCopyFeedback] = useState<"idle" | "copied" | "failed">("idle");
   const socketCountdownStartedRef = useRef(false);
   const isTouchDevice =
     typeof window !== "undefined" &&
     (navigator.maxTouchPoints > 0 || window.matchMedia?.("(pointer: coarse)").matches === true);
-  const isMobileLandscape =
-    typeof window !== "undefined" &&
-    isTouchDevice &&
-    window.innerWidth > window.innerHeight &&
-    window.innerHeight <= 560;
-
-  const startPreMatchSequence = () => {
-    if (isMobileLandscape) {
-      setPreMatchPhase("tutorial");
-      setCountdown(null);
-      return;
-    }
-
-    setPreMatchPhase("combined");
-    setCountdown(3);
-  };
-
-  const resetPreMatchSequence = () => {
-    setPreMatchPhase("idle");
-    setCountdown(null);
-  };
 
   const socketPlayer1 = useMemo(
     () => roomPlayers.find((player) => player.playerNumber === 1),
@@ -113,22 +87,14 @@ function ReadyRoomPage({
         const nextPlayer1Ready = !player1Ready;
         const nextBothReady = nextPlayer1Ready && player2Ready;
         setPlayer1Ready(nextPlayer1Ready);
-        if (nextBothReady) {
-          startPreMatchSequence();
-        } else {
-          resetPreMatchSequence();
-        }
+        setCountdown(nextBothReady ? 3 : null);
         return;
       }
 
       const nextPlayer2Ready = !player2Ready;
       const nextBothReady = player1Ready && nextPlayer2Ready;
       setPlayer2Ready(nextPlayer2Ready);
-      if (nextBothReady) {
-        startPreMatchSequence();
-      } else {
-        resetPreMatchSequence();
-      }
+      setCountdown(nextBothReady ? 3 : null);
     };
 
     if (!isTouchDevice) {
@@ -196,41 +162,16 @@ function ReadyRoomPage({
 
     if (bothPlayersReady && !socketCountdownStartedRef.current) {
       socketCountdownStartedRef.current = true;
-      const timer = window.setTimeout(() => {
-        if (isMobileLandscape) {
-          setPreMatchPhase("tutorial");
-          setCountdown(null);
-          return;
-        }
-
-        setPreMatchPhase("combined");
-        setCountdown(3);
-      }, 0);
+      const timer = window.setTimeout(() => setCountdown(3), 0);
       return () => window.clearTimeout(timer);
     }
 
     if (!bothPlayersReady) {
       socketCountdownStartedRef.current = false;
-      const timer = window.setTimeout(() => {
-        setPreMatchPhase("idle");
-        setCountdown(null);
-      }, 0);
+      const timer = window.setTimeout(() => setCountdown(null), 0);
       return () => window.clearTimeout(timer);
     }
-  }, [isMobileLandscape, socketPlayer1?.ready, socketPlayer2?.ready, useSocketFlow]);
-
-  useEffect(() => {
-    if (preMatchPhase !== "tutorial") {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      setPreMatchPhase("countdown");
-      setCountdown(3);
-    }, MOBILE_TUTORIAL_DURATION_MS);
-
-    return () => window.clearTimeout(timer);
-  }, [preMatchPhase]);
+  }, [socketPlayer1?.ready, socketPlayer2?.ready, useSocketFlow]);
 
   useEffect(() => {
     if (countdown === null) {
@@ -267,9 +208,6 @@ function ReadyRoomPage({
   const displayPlayer1Ready = useSocketFlow ? (socketPlayer1?.ready ?? false) : player1Ready;
   const displayPlayer2Ready = useSocketFlow ? (socketPlayer2?.ready ?? false) : player2Ready;
   const displayCountdown = countdown;
-  const showPreMatch = preMatchPhase !== "idle";
-  const showTutorialDemo = preMatchPhase !== "countdown";
-  const showCountdown = preMatchPhase !== "tutorial";
   const player1IsCurrent = !useSocketFlow || currentPlayerNumber === 1;
   const player2IsCurrent = !useSocketFlow || currentPlayerNumber === 2;
   const player1Present = useSocketFlow ? Boolean(socketPlayer1) : true;
@@ -370,68 +308,54 @@ function ReadyRoomPage({
           <span className="ready-splash splash-right" />
         </div>
 
-        <article className={`ready-stage ${showPreMatch ? "is-counting-down" : ""}`}>
-          {showPreMatch ? (
-            <div
-              className={`ready-tutorial ${
-                preMatchPhase === "tutorial"
-                  ? "is-mobile-tutorial"
-                  : preMatchPhase === "countdown"
-                    ? "is-mobile-countdown"
-                    : ""
-              }`}
-              role="status"
-              aria-live="assertive"
-            >
-              {showCountdown ? (
-                <div className="ready-tutorial-count">
-                  <span className="ready-tutorial-eyebrow">GET READY</span>
-                  <span key={displayCountdown} className="ready-tutorial-number">
-                    {displayCountdown && displayCountdown > 0 ? displayCountdown : "GO"}
-                  </span>
-                </div>
-              ) : null}
+        <article className={`ready-stage ${displayCountdown !== null ? "is-counting-down" : ""}`}>
+          {displayCountdown !== null ? (
+            <div className="ready-tutorial" role="status" aria-live="assertive">
+              <div className="ready-tutorial-count">
+                <span className="ready-tutorial-eyebrow">GET READY</span>
+                <span key={displayCountdown} className="ready-tutorial-number">
+                  {displayCountdown > 0 ? displayCountdown : "GO"}
+                </span>
+              </div>
 
-              {showTutorialDemo ? (
-                <div className="ready-tutorial-demo" aria-hidden="true">
-                  <div className="ready-tutorial-steps">
-                    <div className="ready-tutorial-step ready-tutorial-step-assemble">
-                      <span className="ready-tutorial-step-icon">✦</span>
-                      <span>ASSEMBLE</span>
-                    </div>
-                    <span className="ready-tutorial-step-arrow">›</span>
-                    <div className="ready-tutorial-step ready-tutorial-step-fire">
-                      <span className="ready-tutorial-step-icon ready-tutorial-phone-icon" />
-                      <span>SHAKE TO FIRE</span>
-                    </div>
+              <div className="ready-tutorial-demo" aria-hidden="true">
+                <div className="ready-tutorial-steps">
+                  <div className="ready-tutorial-step ready-tutorial-step-assemble">
+                    <span className="ready-tutorial-step-icon">✦</span>
+                    <span>ASSEMBLE</span>
                   </div>
-
-                  <div className="ready-tutorial-assembly">
-                    <div className="ready-tutorial-canvas">
-                      <WeaponCanvas
-                        layout={DEFAULT_WEAPON_LAYOUT}
-                        partClassName="ready-tutorial-weapon-part"
-                        showLabels={false}
-                      />
-                    </div>
-                    <span className="ready-tutorial-snap ready-tutorial-snap-magazine">✦</span>
-                    <span className="ready-tutorial-snap ready-tutorial-snap-slide">✦</span>
-                  </div>
-
-                  <div className="ready-tutorial-fire">
-                    <span className="ready-tutorial-motion ready-tutorial-motion-left" />
-                    <div className="ready-tutorial-phone">
-                      <span className="ready-tutorial-speaker" />
-                      <span className="ready-tutorial-phone-screen">
-                        <span className="ready-tutorial-mini-gun" />
-                      </span>
-                    </div>
-                    <span className="ready-tutorial-motion ready-tutorial-motion-right" />
-                    <span className="ready-tutorial-muzzle-flash">✦</span>
-                    <span className="ready-tutorial-fire-ring" />
+                  <span className="ready-tutorial-step-arrow">›</span>
+                  <div className="ready-tutorial-step ready-tutorial-step-fire">
+                    <span className="ready-tutorial-step-icon ready-tutorial-phone-icon" />
+                    <span>SHAKE TO FIRE</span>
                   </div>
                 </div>
-              ) : null}
+
+                <div className="ready-tutorial-assembly">
+                  <div className="ready-tutorial-canvas">
+                    <WeaponCanvas
+                      layout={DEFAULT_WEAPON_LAYOUT}
+                      partClassName="ready-tutorial-weapon-part"
+                      showLabels={false}
+                    />
+                  </div>
+                  <span className="ready-tutorial-snap ready-tutorial-snap-magazine">✦</span>
+                  <span className="ready-tutorial-snap ready-tutorial-snap-slide">✦</span>
+                </div>
+
+                <div className="ready-tutorial-fire">
+                  <span className="ready-tutorial-motion ready-tutorial-motion-left" />
+                  <div className="ready-tutorial-phone">
+                    <span className="ready-tutorial-speaker" />
+                    <span className="ready-tutorial-phone-screen">
+                      <span className="ready-tutorial-mini-gun" />
+                    </span>
+                  </div>
+                  <span className="ready-tutorial-motion ready-tutorial-motion-right" />
+                  <span className="ready-tutorial-muzzle-flash">✦</span>
+                  <span className="ready-tutorial-fire-ring" />
+                </div>
+              </div>
 
               <p className="visually-hidden">Assemble the weapon, then shake your phone to fire.</p>
             </div>
