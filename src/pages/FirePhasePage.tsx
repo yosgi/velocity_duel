@@ -177,11 +177,7 @@ function FirePhasePage({
       className={`screen fire-phase-screen ${showShake ? "fire-phase-screen-shake" : ""} ${isFired ? "is-fired" : ""}`}
     >
       <section className="layout-editor-shell">
-        <header className="layout-editor-topbar">
-          <div>
-            <h1 className="layout-editor-title">SHAKE TO FIRE</h1>
-          </div>
-        </header>
+        <header className="layout-editor-topbar" />
 
         <section className="layout-editor-canvas-card fire-phase-card">
           <WeaponCanvas
@@ -193,6 +189,15 @@ function FirePhasePage({
           />
 
           <div className={`fire-phase-flash ${showFlash ? "is-visible" : ""}`} aria-hidden="true" />
+
+          {!reactionMs ? (
+            <div className="game-hint-banner" role="status" aria-live="polite">
+              <span className="game-hint-banner-icon" aria-hidden="true">
+                📳
+              </span>
+              <span>SHAKE TO FIRE</span>
+            </div>
+          ) : null}
 
           {reactionMs ? (
             <div className="fire-phase-overlay">

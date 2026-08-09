@@ -442,64 +442,6 @@ body::before {
   box-shadow: none;
 }
 
-.ready-room-code {
-  display: grid;
-  gap: 8px;
-  justify-items: center;
-}
-
-.ready-room-code-copy {
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  box-shadow: 0 10px 30px rgba(31, 108, 179, 0.12);
-}
-
-.ready-room-code-text {
-  display: grid;
-  gap: 4px;
-  justify-items: center;
-}
-
-.ready-room-code-label {
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  color: rgba(20, 58, 101, 0.68);
-}
-
-.ready-room-code-value {
-  font-size: clamp(2rem, 4vw, 3.2rem);
-  font-family: "Nunito", "Baloo 2", "Trebuchet MS", sans-serif;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #184979;
-  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.28);
-}
-
-.ready-copy-button {
-  min-height: 48px;
-  padding: 0 18px;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 999px;
-  background: linear-gradient(180deg, #dff4ff 0%, #b8e2ff 100%);
-  color: #1a4f87;
-  font-size: 0.95rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  box-shadow: 0 8px 20px rgba(64, 142, 215, 0.16);
-}
-
-.ready-copy-feedback {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: rgba(25, 71, 119, 0.78);
-}
-
 .ready-title {
   margin: 0;
   font-size: clamp(4rem, 8vw, 7.2rem);
@@ -2478,6 +2420,85 @@ body::before {
   font-weight: 800;
 }
 
+.game-hint-banner {
+  position: absolute;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  max-width: min(88vw, 480px);
+  padding: 12px 24px;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(36, 69, 125, 0.94), rgba(18, 42, 84, 0.94));
+  box-shadow:
+    0 10px 26px rgba(10, 30, 60, 0.35),
+    0 0 0 6px rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: clamp(0.95rem, 2.6vw, 1.4rem);
+  font-weight: 900;
+  line-height: 1.15;
+  pointer-events: none;
+  animation: game-hint-banner-pulse 1.7s ease-in-out infinite;
+}
+
+.game-hint-banner.is-success {
+  background: linear-gradient(180deg, rgba(38, 158, 104, 0.95), rgba(15, 108, 70, 0.95));
+}
+
+.game-hint-banner-icon {
+  font-size: 1.25em;
+  line-height: 1;
+  animation: game-hint-icon-bounce 1.2s ease-in-out infinite;
+}
+
+@keyframes game-hint-banner-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 10px 26px rgba(10, 30, 60, 0.35),
+      0 0 0 6px rgba(255, 255, 255, 0.08);
+  }
+  50% {
+    box-shadow:
+      0 10px 30px rgba(10, 30, 60, 0.45),
+      0 0 0 11px rgba(255, 255, 255, 0.16);
+  }
+}
+
+@keyframes game-hint-icon-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@media (orientation: landscape) and (pointer: coarse) and (max-height: 560px) {
+  .game-hint-banner {
+    bottom: max(10px, env(safe-area-inset-bottom));
+    padding: 8px 16px;
+    font-size: clamp(0.72rem, 2.4vw, 1rem);
+    gap: 7px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-hint-banner,
+  .game-hint-banner-icon {
+    animation: none;
+  }
+}
+
 .fire-phase-flash {
   position: absolute;
   inset: 0;
@@ -3521,31 +3542,6 @@ body::before {
     gap: 18px;
   }
 
-  .ready-room-code {
-    gap: 6px;
-  }
-
-  .ready-room-code-copy {
-    gap: 10px;
-    padding: 10px 14px;
-    border-radius: 20px;
-  }
-
-  .ready-room-code-label {
-    font-size: 0.78rem;
-    letter-spacing: 0.16em;
-  }
-
-  .ready-room-code-value {
-    font-size: clamp(1.5rem, 4vw, 2.3rem);
-  }
-
-  .ready-copy-button {
-    min-height: 40px;
-    padding: 0 14px;
-    font-size: 0.82rem;
-  }
-
   .ready-title {
     font-size: clamp(2.7rem, 9vw, 4.8rem);
   }
@@ -3689,23 +3685,6 @@ body::before {
 
   .ready-stage {
     gap: 14px;
-  }
-
-  .ready-room-code-copy {
-    flex-wrap: wrap;
-    justify-content: center;
-    row-gap: 8px;
-    width: min(100%, 320px);
-    padding: 10px 12px;
-  }
-
-  .ready-room-code-value {
-    font-size: clamp(1.35rem, 8vw, 1.9rem);
-  }
-
-  .ready-copy-button {
-    min-height: 36px;
-    padding: 0 12px;
   }
 
   .ready-avatar {
@@ -3894,42 +3873,6 @@ body::before {
     gap: 2px;
     align-content: start;
     justify-content: center;
-  }
-
-  .ready-room-code {
-    gap: 2px;
-  }
-
-  .ready-room-code-copy {
-    gap: 8px;
-    padding: 5px 10px;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 6px 16px rgba(31, 108, 179, 0.1);
-  }
-
-  .ready-room-code-label {
-    font-size: 0.66rem;
-    letter-spacing: 0.12em;
-  }
-
-  .ready-room-code-value {
-    font-size: clamp(1.1rem, 2.7vw, 1.55rem);
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    color: #18446f;
-    text-shadow: 0 1px 8px rgba(255, 255, 255, 0.22);
-  }
-
-  .ready-copy-button {
-    min-height: 30px;
-    padding: 0 10px;
-    font-size: 0.74rem;
-    box-shadow: 0 4px 12px rgba(64, 142, 215, 0.12);
-  }
-
-  .ready-copy-feedback {
-    font-size: 0.78rem;
   }
 
   .ready-title {

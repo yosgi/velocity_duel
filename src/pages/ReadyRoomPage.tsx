@@ -7,7 +7,6 @@ import player2 from "../assets/characters/player2.png";
 import { unlockGameAudio } from "../lib/gameAudio";
 
 type Props = {
-  roomCode: string;
   setCurrentPage: (page: Page) => void;
   useSocketFlow?: boolean;
   currentPlayerNumber?: 1 | 2 | null;
@@ -39,7 +38,6 @@ async function requestMotionAccess() {
 }
 
 function ReadyRoomPage({
-  roomCode,
   setCurrentPage,
   useSocketFlow = false,
   currentPlayerNumber = null,
@@ -55,7 +53,6 @@ function ReadyRoomPage({
   const [player2Ready, setPlayer2Ready] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [permissionMessage, setPermissionMessage] = useState<string | null>(null);
-  const [copyFeedback, setCopyFeedback] = useState<"idle" | "copied" | "failed">("idle");
   const socketCountdownStartedRef = useRef(false);
   const isTouchDevice =
     typeof window !== "undefined" &&
@@ -139,20 +136,6 @@ function ReadyRoomPage({
     void requestPermissionAndReady(2);
   };
 
-  const handleCopyRoomCode = async () => {
-    if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
-      setCopyFeedback("failed");
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(roomCode);
-      setCopyFeedback("copied");
-    } catch {
-      setCopyFeedback("failed");
-    }
-  };
-
   useEffect(() => {
     if (!useSocketFlow) {
       return;
@@ -192,18 +175,6 @@ function ReadyRoomPage({
 
     return () => window.clearTimeout(timer);
   }, [countdown, isPreparingMatch, setCurrentPage]);
-
-  useEffect(() => {
-    if (copyFeedback === "idle") {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      setCopyFeedback("idle");
-    }, 1800);
-
-    return () => window.clearTimeout(timer);
-  }, [copyFeedback]);
 
   const displayPlayer1Ready = useSocketFlow ? (socketPlayer1?.ready ?? false) : player1Ready;
   const displayPlayer2Ready = useSocketFlow ? (socketPlayer2?.ready ?? false) : player2Ready;
@@ -361,19 +332,6 @@ function ReadyRoomPage({
             </div>
           ) : (
             <>
-              <div className="ready-room-code">
-                <div className="ready-room-code-copy">
-                  <div className="ready-room-code-text">
-                    <span className="ready-room-code-label">ROOM CODE</span>
-                    <strong className="ready-room-code-value">{roomCode}</strong>
-                  </div>
-                  <button type="button" className="ready-copy-button" onClick={handleCopyRoomCode}>
-                    {copyFeedback === "copied" ? "COPIED" : "COPY"}
-                  </button>
-                </div>
-                {copyFeedback === "failed" ? <span className="ready-copy-feedback">Copy unavailable</span> : null}
-              </div>
-
               <h1 className="ready-title">READY?</h1>
 
               <div className="ready-lineup">
