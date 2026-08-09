@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 
 type Props = {
-  onBack: () => void;
+  onHome: () => void;
   roomCode?: string | null;
 };
 
-function GameAppBar({ onBack, roomCode }: Props) {
+function GameAppBar({ onHome, roomCode }: Props) {
   const [copyFeedback, setCopyFeedback] = useState<"idle" | "copied" | "failed">("idle");
 
   useEffect(() => {
@@ -34,9 +34,9 @@ function GameAppBar({ onBack, roomCode }: Props) {
 
   return (
     <nav className="game-appbar" aria-label="Game navigation">
-      <button className="game-appbar-button" type="button" onClick={onBack} aria-label="Back">
-        <span aria-hidden="true">←</span>
-        <span>BACK</span>
+      <button className="game-appbar-button" type="button" onClick={onHome} aria-label="Home">
+        <span aria-hidden="true">⌂</span>
+        <span>HOME</span>
       </button>
 
       {roomCode ? (

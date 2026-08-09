@@ -177,7 +177,6 @@ function App() {
   }));
   const socket = useMemo(() => getSocket(), []);
   const currentPageRef = useRef<Page>("home");
-  const pageHistoryRef = useRef<Page[]>([]);
   const roomActionAttemptRef = useRef(0);
   const weaponAssetsPromiseRef = useRef<Promise<void> | null>(null);
   const isDev = import.meta.env.DEV;
@@ -192,7 +191,6 @@ function App() {
       return;
     }
 
-    pageHistoryRef.current.push(current);
     currentPageRef.current = page;
     setCurrentPage(page);
   }, []);
@@ -573,7 +571,7 @@ function App() {
     );
   };
 
-  const leaveRoomAndNavigate = (destination: Page, clearHistory: boolean) => {
+  const handleGoHome = () => {
     roomActionAttemptRef.current += 1;
     if (socket.connected && currentPlayerNumber) {
       socket.emit("leaveRoom", { roomCode }, (result: { ok: boolean }) => {
@@ -583,31 +581,7 @@ function App() {
 
     resetRoomSession();
     setRoomCode(generateRoomCode());
-    if (clearHistory) {
-      pageHistoryRef.current = [];
-    }
-    replaceCurrentPage(destination);
-  };
-
-  const handleBackNavigation = () => {
-    const destination = pageHistoryRef.current.pop() ?? "home";
-    const isLeavingRoomFlow =
-      currentPlayerNumber !== null && (destination === "home" || destination === "create" || destination === "join");
-
-    if (destination === "home" || isLeavingRoomFlow) {
-      leaveRoomAndNavigate(destination, destination === "home");
-      return;
-    }
-
-    if (destination === "ready" && socket.connected && currentPlayerNumber) {
-      socket.emit("playerReady", { roomCode, ready: false }, (result: { ok: boolean; error?: string }) => {
-        if (!result?.ok) {
-          setRoomError(result?.error || "Unable to return to the room.");
-        }
-      });
-    }
-
-    replaceCurrentPage(destination);
+    replaceCurrentPage("home");
   };
 
   const handlePlayAgain = async () => {
@@ -780,7 +754,7 @@ function App() {
         <>
           {APPBAR_PAGES.has(currentPage) ? (
             <GameAppBar
-              onBack={handleBackNavigation}
+              onHome={handleGoHome}
               roomCode={ROOM_CODE_APPBAR_PAGES.has(currentPage) ? roomCode : null}
             />
           ) : null}

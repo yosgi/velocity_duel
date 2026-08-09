@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MotionPermissionState, Page } from "../App";
 import WeaponCanvas from "../components/WeaponCanvas";
 import { readSavedWeaponLayout } from "../components/weaponCanvasConfig";
@@ -16,6 +16,7 @@ type Props = {
 };
 
 const SHAKE_THRESHOLD = 12;
+const FIRE_BUTTON_DELAY_MS = 1000;
 
 function FirePhasePage({
   motionPermission,
@@ -32,6 +33,7 @@ function FirePhasePage({
   const [showFlash, setShowFlash] = useState(false);
   const [showShake, setShowShake] = useState(false);
   const [reactionMs, setReactionMs] = useState<number | null>(null);
+  const [showFireButton, setShowFireButton] = useState(false);
   const hasFiredRef = useRef(false);
   const isArmedRef = useRef(false);
   const hasBaselineRef = useRef(false);
@@ -40,6 +42,7 @@ function FirePhasePage({
   const shakeTimeoutRef = useRef<number | null>(null);
   const flashTimeoutRef = useRef<number | null>(null);
   const resultTimeoutRef = useRef<number | null>(null);
+  const fireButtonTimeoutRef = useRef<number | null>(null);
   const screenRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -53,10 +56,13 @@ function FirePhasePage({
     setShowFlash(false);
     setShowShake(false);
     setReactionMs(null);
+    setShowFireButton(false);
     hasFiredRef.current = false;
     isArmedRef.current = true;
     hasBaselineRef.current = false;
     lastAccelerationRef.current = { x: 0, y: 0, z: 0 };
+
+    fireButtonTimeoutRef.current = window.setTimeout(() => setShowFireButton(true), FIRE_BUTTON_DELAY_MS);
 
     return () => {
       if (recoilTimeoutRef.current) {
@@ -71,11 +77,14 @@ function FirePhasePage({
       if (resultTimeoutRef.current) {
         window.clearTimeout(resultTimeoutRef.current);
       }
+      if (fireButtonTimeoutRef.current) {
+        window.clearTimeout(fireButtonTimeoutRef.current);
+      }
     };
   }, [setReactionTimeMs]);
 
-  useEffect(() => {
-    const handleFire = (source: "motion" | "keyboard") => {
+  const handleFire = useCallback(
+    (source: "motion" | "keyboard" | "tap") => {
       if (hasFiredRef.current) {
         return;
       }
@@ -116,8 +125,11 @@ function FirePhasePage({
       } else {
         resultTimeoutRef.current = window.setTimeout(() => setCurrentPage("result"), 1100);
       }
-    };
+    },
+    [assemblyStartTimestamp, roomCode, setCurrentPage, setReactionTimeMs, socket, useSocketFlow],
+  );
 
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === "Space") {
         event.preventDefault();
@@ -168,7 +180,7 @@ function FirePhasePage({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("devicemotion", handleMotion);
     };
-  }, [assemblyStartTimestamp, motionPermission, roomCode, setCurrentPage, setReactionTimeMs, socket, useSocketFlow]);
+  }, [handleFire, motionPermission]);
 
   return (
     <main
@@ -191,9 +203,20 @@ function FirePhasePage({
           <div className={`fire-phase-flash ${showFlash ? "is-visible" : ""}`} aria-hidden="true" />
 
           {!reactionMs ? (
-            <p className="game-hint-banner" role="status" aria-live="polite">
-              SHAKE TO FIRE
-            </p>
+            <div className="fire-phase-hint-stack">
+              <p className="game-hint-banner" role="status" aria-live="polite">
+                SHAKE TO FIRE
+              </p>
+              {showFireButton ? (
+                <button
+                  type="button"
+                  className="button button-yellow fire-phase-fire-button"
+                  onClick={() => handleFire("tap")}
+                >
+                  FIRE
+                </button>
+              ) : null}
+            </div>
           ) : null}
 
           {reactionMs ? (

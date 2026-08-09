@@ -2444,6 +2444,61 @@ body::before {
   }
 }
 
+.fire-phase-hint-stack {
+  position: absolute;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.fire-phase-hint-stack .game-hint-banner {
+  position: static;
+  transform: none;
+}
+
+.fire-phase-fire-button {
+  min-height: 56px;
+  padding: 0 40px;
+  font-size: 1.3rem;
+  pointer-events: auto;
+  animation: fire-phase-fire-button-in 320ms cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+}
+
+@keyframes fire-phase-fire-button-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (orientation: landscape) and (pointer: coarse) and (max-height: 560px) {
+  .fire-phase-hint-stack {
+    bottom: max(8px, env(safe-area-inset-bottom));
+    gap: 8px;
+  }
+
+  .fire-phase-fire-button {
+    min-height: 42px;
+    padding: 0 26px;
+    font-size: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fire-phase-fire-button {
+    animation: none;
+  }
+}
+
 .fire-phase-flash {
   position: absolute;
   inset: 0;
