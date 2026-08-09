@@ -191,12 +191,9 @@ function FirePhasePage({
           <div className={`fire-phase-flash ${showFlash ? "is-visible" : ""}`} aria-hidden="true" />
 
           {!reactionMs ? (
-            <div className="game-hint-banner" role="status" aria-live="polite">
-              <span className="game-hint-banner-icon" aria-hidden="true">
-                📳
-              </span>
-              <span>SHAKE TO FIRE</span>
-            </div>
+            <p className="game-hint-banner" role="status" aria-live="polite">
+              SHAKE TO FIRE
+            </p>
           ) : null}
 
           {reactionMs ? (

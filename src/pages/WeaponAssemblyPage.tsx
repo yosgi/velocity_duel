@@ -628,10 +628,10 @@ function WeaponAssemblyPage({ setCurrentPage, setReactionTimeMs, onAssemblyStart
 
   const hint =
     step === "complete"
-      ? { icon: "✅", text: "READY TO FIRE", tone: "is-success" }
+      ? { text: "READY TO FIRE", tone: "is-success" }
       : step === "magazine"
-        ? { icon: "🧩", text: "INSERT MAGAZINE", tone: "" }
-        : { icon: "🔧", text: "SLIDE TOP", tone: "" };
+        ? { text: "INSERT MAGAZINE", tone: "" }
+        : { text: "SLIDE TOP", tone: "" };
 
   return (
     <main ref={screenRef} className="screen weapon-mini-screen">
@@ -666,12 +666,9 @@ function WeaponAssemblyPage({ setCurrentPage, setReactionTimeMs, onAssemblyStart
             visiblePartIds={visiblePartIds}
           />
 
-          <div className={`game-hint-banner ${hint.tone}`} role="status" aria-live="polite">
-            <span className="game-hint-banner-icon" aria-hidden="true">
-              {hint.icon}
-            </span>
-            <span>{hint.text}</span>
-          </div>
+          <p className={`game-hint-banner ${hint.tone}`} role="status" aria-live="polite">
+            {hint.text}
+          </p>
         </section>
 
         {import.meta.env.DEV ? (
