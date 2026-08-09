@@ -11,7 +11,7 @@ import FirePhasePage from "./pages/FirePhasePage";
 import ResultPage from "./pages/ResultPage";
 import WeaponLayoutEditor from "./pages/WeaponLayoutEditor";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
-import GameNavigation from "./components/GameNavigation";
+import GameAppBar from "./components/GameAppBar";
 import { getSocket } from "./lib/socket";
 import { unlockGameAudio } from "./lib/gameAudio";
 import { clearActiveInputFocus, requestGamePresentation } from "./lib/gamePresentation";
@@ -28,6 +28,9 @@ export type Page =
   | "fire"
   | "result"
   | "layout-editor";
+
+const APPBAR_PAGES = new Set<Page>(["create", "join", "ready", "result", "layout-editor"]);
+const ROOM_CODE_APPBAR_PAGES = new Set<Page>(["ready", "result"]);
 
 export type MotionPermissionState =
   | "unknown"
@@ -586,10 +589,6 @@ function App() {
     replaceCurrentPage(destination);
   };
 
-  const handleLeaveRoom = () => {
-    leaveRoomAndNavigate("home", true);
-  };
-
   const handleBackNavigation = () => {
     const destination = pageHistoryRef.current.pop() ?? "home";
     const isLeavingRoomFlow =
@@ -779,8 +778,11 @@ function App() {
         </div>
       ) : (
         <>
-          {currentPage !== "home" ? (
-            <GameNavigation onBack={handleBackNavigation} onHome={handleLeaveRoom} />
+          {APPBAR_PAGES.has(currentPage) ? (
+            <GameAppBar
+              onBack={handleBackNavigation}
+              roomCode={ROOM_CODE_APPBAR_PAGES.has(currentPage) ? roomCode : null}
+            />
           ) : null}
 
           {isDev && currentPage !== "layout-editor" ? (
@@ -835,7 +837,6 @@ function App() {
           )}
           {currentPage === "ready" && (
             <ReadyRoomPage
-              roomCode={roomCode}
               setCurrentPage={navigateTo}
               useSocketFlow={useSocketReadyFlow}
               currentPlayerNumber={currentPlayerNumber}

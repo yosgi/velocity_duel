@@ -2,48 +2,112 @@
   min-height: 100vh;
 }
 
-.game-navigation {
+.game-appbar {
   position: fixed;
-  top: max(10px, env(safe-area-inset-top));
-  left: max(10px, env(safe-area-inset-left));
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 80;
   display: flex;
-  gap: 8px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding:
+    max(10px, env(safe-area-inset-top))
+    max(10px, env(safe-area-inset-right))
+    0
+    max(10px, env(safe-area-inset-left));
+  pointer-events: none;
 }
 
-.game-navigation-button {
-  min-width: 78px;
-  min-height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 7px 12px;
-  border: 2px solid #385170;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #244d7b;
-  box-shadow: 0 4px 0 rgba(45, 72, 106, 0.18);
-  font: inherit;
-  font-size: 0.78rem;
-  font-weight: 900;
-  line-height: 1;
+.game-appbar-button,
+.game-appbar-code {
+  pointer-events: auto;
+}
+
+.game-appbar-button,
+.game-appbar-code {
+  border: 3px solid #2e4367;
+  box-shadow: 0 6px 0 rgba(46, 67, 103, 0.16);
+  transition: transform 120ms ease, box-shadow 120ms ease;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 
-.game-navigation-button:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 rgba(45, 72, 106, 0.18);
+.game-appbar-button:active,
+.game-appbar-code:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgba(46, 67, 103, 0.16);
+}
+
+.game-appbar-button {
+  min-width: 104px;
+  min-height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #eef7ff 100%);
+  color: #2e4367;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.game-appbar-button span:first-child {
+  font-size: 1.2em;
+}
+
+.game-appbar-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 10px 22px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffde55 0%, #ffc935 100%);
+  color: #2e4367;
+  font: inherit;
+  line-height: 1;
+}
+
+.game-appbar-code-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  opacity: 0.65;
+}
+
+.game-appbar-code-value {
+  font-size: 1.32rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+}
+
+.game-appbar-code-status {
+  font-size: 1.15rem;
 }
 
 @media (orientation: landscape) and (max-height: 560px) {
-  .game-navigation-button {
-    min-width: 68px;
-    min-height: 36px;
-    padding: 6px 9px;
-    border-radius: 12px;
-    font-size: 0.7rem;
+  .game-appbar-button {
+    min-width: 84px;
+    min-height: 42px;
+    padding: 7px 14px;
+    border-radius: 14px;
+    font-size: 0.82rem;
+  }
+
+  .game-appbar-code {
+    min-height: 42px;
+    padding: 7px 18px;
+    border-radius: 14px;
+  }
+
+  .game-appbar-code-value {
+    font-size: 1.05rem;
   }
 }
 
